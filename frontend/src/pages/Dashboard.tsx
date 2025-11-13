@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Shield, Star, MessageSquare, TrendingUp } from 'lucide-react';
+import { Shield, Star, MessageSquare, TrendingUp, CreditCard, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -61,6 +62,46 @@ const Dashboard: React.FC = () => {
             <p className="text-sm text-gray-600 mt-1">Current level</p>
           </div>
         </div>
+
+        {user.subscriptionTier === 'FREE' && (
+          <div className="bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg shadow-lg p-6 mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="mb-4 md:mb-0">
+                <h3 className="text-2xl font-bold mb-2">Upgrade to Premium</h3>
+                <p className="text-primary-100">
+                  Unlock unlimited AI queries, priority support, and exclusive features
+                </p>
+              </div>
+              <Link
+                to="/plans"
+                className="bg-white text-primary-600 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <CreditCard className="w-5 h-5" />
+                View Plans
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {user.subscriptionTier !== 'FREE' && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Member</h3>
+                <p className="text-gray-600">
+                  You are enjoying all the benefits of {user.subscriptionTier.replace('_', ' ')}
+                </p>
+              </div>
+              <Link
+                to="/subscriptions"
+                className="btn-secondary flex items-center gap-2"
+              >
+                <Settings className="w-5 h-5" />
+                Manage Subscription
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6">

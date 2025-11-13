@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Shield, Brain, Users, ArrowRight } from 'lucide-react';
+import { Star, Shield, Brain, Users, ArrowRight, Search } from 'lucide-react';
 
 const Home: React.FC = () => {
   return (
@@ -21,6 +21,33 @@ const Home: React.FC = () => {
               <Link to="/reviews" className="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-bold py-3 px-8 rounded-lg transition-colors">
                 Explore Reviews
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4">Find Your Perfect College</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              Search from thousands of colleges across India with advanced filters
+            </p>
+          </div>
+          <div className="max-w-3xl mx-auto">
+            <Link
+              to="/colleges"
+              className="flex items-center justify-center gap-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-8 rounded-lg shadow-lg transition-colors"
+            >
+              <Search className="w-6 h-6" />
+              Start Searching Colleges
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <span className="bg-white px-4 py-2 rounded-full text-sm text-gray-700 shadow-sm">Filter by State</span>
+              <span className="bg-white px-4 py-2 rounded-full text-sm text-gray-700 shadow-sm">College Type</span>
+              <span className="bg-white px-4 py-2 rounded-full text-sm text-gray-700 shadow-sm">Ranking</span>
+              <span className="bg-white px-4 py-2 rounded-full text-sm text-gray-700 shadow-sm">Courses</span>
             </div>
           </div>
         </div>

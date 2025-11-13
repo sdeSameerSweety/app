@@ -24,8 +24,14 @@ const Navbar: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
+            <Link to="/colleges" className="text-gray-700 hover:text-primary-600 px-3 py-2">
+              Search Colleges
+            </Link>
             <Link to="/reviews" className="text-gray-700 hover:text-primary-600 px-3 py-2">
               Reviews
+            </Link>
+            <Link to="/plans" className="text-gray-700 hover:text-primary-600 px-3 py-2">
+              Plans
             </Link>
             {user && (
               <>
@@ -78,10 +84,22 @@ const Navbar: React.FC = () => {
         <div className="md:hidden bg-white border-t">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
+              to="/colleges"
+              className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            >
+              Search Colleges
+            </Link>
+            <Link
               to="/reviews"
               className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
             >
               Reviews
+            </Link>
+            <Link
+              to="/plans"
+              className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            >
+              Plans
             </Link>
             {user && (
               <>
