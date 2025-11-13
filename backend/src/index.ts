@@ -8,6 +8,8 @@ import { rateLimiter } from './middleware/rateLimiter';
 import authRoutes from './routes/authRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import aiRoutes from './routes/aiRoutes';
+import searchRoutes from './routes/searchRoutes';
+import paymentRoutes from './routes/paymentRoutes';
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

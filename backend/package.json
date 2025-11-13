@@ -17,7 +17,12 @@
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
-  "keywords": ["edtech", "career", "reviews", "ai"],
+  "keywords": [
+    "edtech",
+    "career",
+    "reviews",
+    "ai"
+  ],
   "author": "Sameer Swain",
   "license": "ISC",
   "dependencies": {
@@ -28,6 +33,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.10",
+    "razorpay": "^2.9.6",
     "twilio": "^5.10.5"
   },
   "devDependencies": {
