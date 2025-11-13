@@ -1,0 +1,340 @@
+// 2minreview - Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  STUDENT
+  PROFESSIONAL
+  ENTREPRENEUR
+  PARENT
+  ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  STUDENT_PREMIUM
+  PROFESSIONAL_PREMIUM
+  ENTERPRISE_PREMIUM
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VerificationLevel {
+  LEVEL_1 // Email/Phone
+  LEVEL_2 // Document + Face
+  LEVEL_3 // Manual Review + ML
+  LEVEL_4 // Trusted + History
+}
+
+enum ReviewType {
+  COLLEGE
+  COURSE
+  COMPANY
+  MENTOR
+}
+
+enum CircleType {
+  PUBLIC
+  VERIFIED
+  PREMIUM
+}
+
+// Models
+model User {
+  id                  String              @id @default(uuid())
+  email               String              @unique
+  phone               String?             @unique
+  password            String
+  name                String
+  role                UserRole            @default(STUDENT)
+  subscriptionTier    SubscriptionTier    @default(FREE)
+  verificationStatus  VerificationStatus  @default(PENDING)
+  verificationLevel   VerificationLevel   @default(LEVEL_1)
+  faceEmbedding       String?             // Encrypted face embedding for biometric auth
+  credibilityScore    Int                 @default(0)
+  aiQueriesUsed       Int                 @default(0)
+  voiceConversationsUsed Int             @default(0)
+  isEmailVerified     Boolean             @default(false)
+  isPhoneVerified     Boolean             @default(false)
+  isFaceVerified      Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  lastLoginAt         DateTime?
+
+  // Relations
+  profile             UserProfile?
+  reviews             Review[]
+  verificationDocs    VerificationDocument[]
+  aiConversations     AIConversation[]
+  circles             CircleMember[]
+  posts               Post[]
+  comments            Comment[]
+  mentorProfile       MentorProfile?
+  subscriptionHistory SubscriptionHistory[]
+  otp                 OTP[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model UserProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio             String?
+  location        String?
+  linkedinUrl     String?
+  githubUrl       String?
+  currentStatus   String?   // e.g., "Student at IIT Delhi", "Software Engineer at Google"
+  experience      Json?     // Array of work experiences
+  education       Json?     // Array of education details
+  skills          String[]
+  interests       String[]
+  profilePicture  String?
+  coverImage      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model VerificationDocument {
+  id              String              @id @default(uuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentType    String              // "ID_CARD", "ENROLLMENT_LETTER", "PAYSLIP", etc.
+  documentUrl     String
+  status          VerificationStatus  @default(PENDING)
+  mlConfidence    Float?              // ML model confidence score
+  reviewedBy      String?             // Admin ID who reviewed
+  reviewNotes     String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OTP {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code        String
+  type        String    // "EMAIL" or "PHONE"
+  expiresAt   DateTime
+  isUsed      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model College {
+  id              String    @id @default(uuid())
+  name            String
+  location        String
+  state           String
+  city            String
+  type            String    // "Engineering", "Medical", "Arts", etc.
+  ranking         Int?
+  website         String?
+  logo            String?
+  description     String?
+  establishedYear Int?
+  accreditation   String[]
+  courses         Course[]
+  reviews         Review[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([name])
+  @@index([state])
+  @@index([city])
+}
+
+model Course {
+  id              String    @id @default(uuid())
+  collegeId       String?
+  college         College?  @relation(fields: [collegeId], references: [id])
+  name            String
+  category        String    // "Engineering", "Management", "Data Science", etc.
+  duration        String?
+  fees            String?
+  mode            String?   // "Online", "Offline", "Hybrid"
+  platform        String?   // For online courses
+  instructorName  String?
+  rating          Float?
+  enrollmentCount Int       @default(0)
+  description     String?
+  syllabus        Json?
+  reviews         Review[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([name])
+  @@index([category])
+}
+
+model Review {
+  id                String      @id @default(uuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewType        ReviewType
+  collegeId         String?
+  college           College?    @relation(fields: [collegeId], references: [id])
+  courseId          String?
+  course            Course?     @relation(fields: [courseId], references: [id])
+  rating            Int         // 1-5
+  title             String
+  content           String
+  pros              String?
+  cons              String?
+  tags              String[]
+  upvotes           Int         @default(0)
+  downvotes         Int         @default(0)
+  isVerified        Boolean     @default(false)
+  verificationScore Float?      // ML authenticity score
+  isFeatured        Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  comments          Comment[]
+
+  @@index([userId])
+  @@index([reviewType])
+  @@index([collegeId])
+  @@index([courseId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewId    String?
+  review      Review?   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  postId      String?
+  post        Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  content     String
+  upvotes     Int       @default(0)
+  downvotes   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([reviewId])
+  @@index([postId])
+}
+
+model Circle {
+  id              String        @id @default(uuid())
+  name            String
+  description     String
+  type            CircleType    @default(PUBLIC)
+  category        String        // "College", "Company", "Skill", "Interest"
+  memberLimit     Int?
+  coverImage      String?
+  rules           String?
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  members         CircleMember[]
+  posts           Post[]
+
+  @@index([name])
+  @@index([type])
+  @@index([category])
+}
+
+model CircleMember {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  circleId    String
+  circle      Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  role        String    @default("MEMBER") // "ADMIN", "MODERATOR", "MEMBER"
+  joinedAt    DateTime  @default(now())
+
+  @@unique([userId, circleId])
+  @@index([userId])
+  @@index([circleId])
+}
+
+model Post {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  circleId    String
+  circle      Circle    @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  title       String?
+  content     String
+  attachments String[]
+  upvotes     Int       @default(0)
+  downvotes   Int       @default(0)
+  isPinned    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  comments    Comment[]
+
+  @@index([userId])
+  @@index([circleId])
+  @@index([createdAt])
+}
+
+model AIConversation {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String    // "TEXT" or "VOICE"
+  messages        Json      // Array of messages with role and content
+  language        String    @default("en") // "en", "hi", etc.
+  tokensUsed      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model MentorProfile {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expertise       String[]
+  experience      Int       // Years of experience
+  hourlyRate      Float?
+  availability    Json?     // Schedule information
+  sessionsCount   Int       @default(0)
+  averageRating   Float?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model SubscriptionHistory {
+  id              String              @id @default(uuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier            SubscriptionTier
+  amount          Float
+  startDate       DateTime
+  endDate         DateTime
+  paymentId       String?
+  status          String              // "ACTIVE", "EXPIRED", "CANCELLED"
+  createdAt       DateTime            @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
