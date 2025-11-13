@@ -16,6 +16,22 @@ services:
     networks:
       - app-network
 
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: 2minreview-ml-service
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      ML_SERVICE_PORT: 5001
+      BACKEND_API_URL: http://backend:5000/api
+    volumes:
+      - ml-uploads:/app/uploads
+    networks:
+      - app-network
+
   backend:
     build:
       context: ./backend
@@ -30,8 +46,10 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/2minreview?schema=public
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
       FRONTEND_URL: http://localhost:3000
+      ML_SERVICE_URL: http://ml-service:5001/api/ml
     depends_on:
       - postgres
+      - ml-service
     networks:
       - app-network
     command: sh -c "npm run prisma:migrate && npm start"
@@ -51,6 +69,7 @@ services:
 
 volumes:
   postgres_data:
+  ml-uploads:
 
 networks:
   app-network:
